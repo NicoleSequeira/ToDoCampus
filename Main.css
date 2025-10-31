@@ -1,0 +1,555 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+html, body { height: 100%; }
+:root {
+	--page-bg: #f8fafc;
+	--dot-color: rgba(15, 23, 42, 0.08); 
+	--dot-size: 2px; 
+	--dot-space: 20px; 
+	/* layout vars for right stack */
+	--stack-top: 46px;
+	--stack-gap: 24px;
+	--nav-clear: 150px; /* leave space above bottom nav */
+	--calendar-h: 360px; /* slightly shorter with tighter frame */
+}
+body {
+	margin: 0;
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+	background-color: var(--page-bg);
+	background-image: radial-gradient(circle, var(--dot-color) var(--dot-size), transparent var(--dot-size));
+	background-size: var(--dot-space) var(--dot-space);
+	background-position: 0 0;
+}
+
+.dotted-bg {
+	background-color: var(--page-bg);
+	background-image: radial-gradient(circle, var(--dot-color) var(--dot-size), transparent var(--dot-size));
+	background-size: var(--dot-space) var(--dot-space);
+	background-position: 0 0;
+}
+
+
+
+.bottom-nav {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: #6b8096; 
+	padding: 14px 22px 18px;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+
+.bottom-nav::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: -22px;
+	transform: translateX(-50%);
+	width: 110px;
+	height: 55px; /* half of width roughly for a dome */
+	background: #6b8096;
+	border-top-left-radius: 110px;
+	border-top-right-radius: 110px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.nav-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	align-items: end;
+	gap: 12px;
+	max-width: 1100px;
+	margin-inline: auto;
+}
+
+.nav-item {
+	display: grid;
+	justify-items: center;
+	align-items: center;
+	gap: 6px;
+}
+
+.nav-item--primary {
+	position: relative;
+}
+
+/* Small white circular buttons */
+.nav-btn {
+	display: grid;
+	place-items: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	background: #ffffff;
+	color: #334155; /* slate-700 */
+	text-decoration: none;
+	font-size: 28px;
+	box-shadow: 0 6px 12px rgba(0,0,0,.15);
+}
+
+/* Inline SVG icons inside nav buttons */
+.nav-btn svg {
+	width: 28px;
+	height: 28px;
+	display: block;
+	stroke: currentColor;
+	color: inherit;
+}
+
+.nav-btn--primary {
+	width: 84px;
+	height: 124px;
+	font-size: 120px;
+	line-height: 1;
+	background: transparent; /* remove white background */
+	color: #ffffff; /* white plus */
+	border-radius: 0; /* no circle */
+	margin-top: -56px; /* sit nicely in the bump */
+	box-shadow: none; /* no shadow, just the plus */
+	font-weight: 300;
+	position: relative;
+	z-index: 1; /* above the bump */
+}
+
+/* (No special overrides needed for icons in original design) */
+
+.nav-label {
+	color: #0f172a;
+	font-size: 14px;
+}
+
+.label-top {
+	position: absolute;
+	top: -26px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: #0f172a;
+	font-size: 16px;
+	white-space: nowrap;
+}
+
+/* Make sure content is not hidden behind the fixed bar */
+main { padding-bottom: 120px; }
+
+/* Responsive tweaks */
+@media (max-width: 540px) {
+	.nav-btn { width: 54px; height: 54px; }
+	.nav-btn--primary { width: 72px; height: 72px; margin-top: -22px; font-size: 38px; }
+	.nav-label { font-size: 12px; }
+	.label-top { top: -22px; font-size: 14px; }
+}
+
+
+/* ===== App Canvas and Placeholders ===== */
+.canvas {
+	position: relative;
+	min-height: calc(100vh - 120px);
+}
+
+/* ===== Whiteboard ===== */
+.board {
+	position: relative;
+	min-height: 420px;
+	margin: 14px 14px 120px 14px; /* leave space above nav */
+}
+
+.board-item {
+	position: absolute;
+	top: 40px; left: 40px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+	padding: 10px;
+	cursor: move;
+	user-select: none;
+	min-width: 160px;
+}
+.board-item .item-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.board-item .item-title { font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.board-item .color-dot { width: 10px; height: 10px; border-radius: 999px; border: 1px solid #cbd5e1; }
+.board-item .item-actions { display: flex; gap: 6px; }
+.board-item .btn-icon { background: transparent; border: 0; cursor: pointer; color: #334155; font-size: 16px; }
+
+/* Selection and resize */
+.board-item.selected { outline: 2px dashed #94a3b8; outline-offset: 2px; }
+.board-item .resizer { position: absolute; right: 4px; bottom: 4px; width: 12px; height: 12px; border-right: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; cursor: nwse-resize; }
+
+/* Folder item */
+.board-item.folder { width: 160px; height: 120px; display: grid; place-items: center; }
+.board-item.folder .item-title { font-size: 14px; }
+/* Folder name link styles */
+.board-item .item-title .name {
+	color: #415A77; /* brand primary */
+	text-decoration: none;
+}
+.board-item .item-title .name:visited { color: #415A77; }
+.board-item .item-title .name:hover { color: #778DA9; text-decoration: underline; }
+.board-item .item-title .name:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; border-radius: 4px; }
+/* Folder icon link */
+.board-item .item-title .folder-open {
+	text-decoration: none;
+	color: #334155;
+}
+.board-item .item-title .folder-open:hover { color: #0f172a; }
+.board-item .item-title .folder-open:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; border-radius: 4px; }
+
+/* Doc item (notes like Google Doc) */
+.board-item.doc { width: 320px; height: 240px; display: flex; flex-direction: column; }
+.board-item.doc textarea { flex: 1; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; resize: vertical; min-height: 120px; }
+
+/* To-do list item (mini sheet) */
+.board-item.todo { width: 300px; min-height: 160px; }
+.board-item.todo .sheet-lines { max-height: 180px; overflow: auto; }
+
+/* Todo inline editing */
+.board-item.todo .sheet-lines > li .line-text[contenteditable="true"] { outline: none; }
+.board-item.todo .sheet-lines > li.done .line-text { text-decoration: line-through; color: #64748b; }
+.board-item.todo .sheet-lines > li.done .line-check { background: #0f172a; border-color: #0f172a; }
+
+/* Upload item - full image display */
+.board-item.upload { width: 320px; min-height: 180px; display: flex; flex-direction: column; }
+.board-item.upload .upload-gallery { display: flex; flex-direction: column; gap: 8px; overflow: auto; flex: 1; }
+.board-item.upload .upload-image { width: 100%; height: auto; border-radius: 8px; display: block; }
+.board-item.upload .file-item { display: flex; align-items: center; gap: 8px; padding: 6px; background: #f8fafc; border-radius: 6px; }
+
+/* Dragging visual */
+.board-item.dragging { opacity: 0.85; box-shadow: 0 12px 28px rgba(0,0,0,0.18); }
+
+/* Trash hotspot highlight */
+.trash-area.hot i { color: #b91c1c; transform: scale(1.06); transition: transform .1s ease; }
+
+/* Drag guides */
+.drag-guides { position: absolute; inset: 0; pointer-events: none; }
+.drag-guides .v, .drag-guides .h { position: absolute; background: rgba(15,23,42,0.25); }
+.drag-guides .v { width: 1px; top: 0; bottom: 0; }
+.drag-guides .h { height: 1px; left: 0; right: 0; }
+
+/* Right-side stacked cards (Tasks/Reminders and Calendar) */
+.placeholder-stack {
+	position: fixed;
+	right: 24px;
+	top: 46px;
+	display: grid;
+	gap: 24px;
+	z-index: 0; /* behind the nav bump */
+}
+
+.card-placeholder {
+	width: min(420px, 38vw);
+	height: 200px;
+	background: #6b8096; /* slate steel */
+	border-radius: 24px;
+	box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+	display: flex;
+	flex-direction: column; /* stack items so link is under the heading */
+	align-items: flex-start;
+	gap: 6px;
+	padding: 10px 12px; /* thinner frame so the blue border looks smaller */
+}
+
+/* Tasks card should extend toward bottom and stop above nav */
+.tasks-card { height: calc(100vh - var(--stack-top) - var(--calendar-h) - var(--stack-gap) - var(--nav-clear)); }
+.tasks-card { min-height: 220px; }
+.tasks-card .task-list { flex: 1; max-height: none; min-height: 0; }
+
+.card-placeholder h2 {
+	color: #0f172a; /* near-black like mock */
+	font-size: 22px;
+	font-weight: 600;
+}
+
+/* Task list and link styling inside card */
+.task-list { list-style: none; padding-left: 0; margin: 0; }
+.task-list a { color: #ffffff; text-decoration: underline; font-weight: 600; }
+.task-list a:visited { color: #ffffff; }
+.task-list a:hover { opacity: 0.9; }
+
+/* Tasks form & list */
+.task-form { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; width: 100%; align-items: center; }
+.task-form input[type="text"] {
+	flex: 1;
+	padding: 8px 10px;
+	border-radius: 8px;
+	border: 1px solid #cbd5e1;
+	background: #ffffff;
+}
+.task-form input[type="date"] {
+	padding: 8px 10px;
+	border-radius: 8px;
+	border: 1px solid #cbd5e1;
+	background: #ffffff;
+}
+.task-form button {
+	padding: 8px 14px;
+	border-radius: 8px;
+	border: 0;
+	background: #0f172a;
+	color: #ffffff;
+	font-weight: 600;
+	cursor: pointer;
+}
+.task-form button:hover { filter: brightness(1.1); }
+
+/* Sheet-style to-do design */
+.todo-sheet {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 8px 10px; /* tighter, brings lines higher */
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.sheet-title { font-size: 16px; letter-spacing: 0.05em; font-weight: 600; color: #0f172a; }
+.sheet-days { display: flex; align-items: center; gap: 6px; }
+.sheet-days span {
+	font-size: 12px;
+	color: #64748b;
+	width: 20px;
+	height: 20px;
+	border-radius: 999px;
+	display: grid;
+	place-items: center;
+	border: 1px solid transparent;
+}
+.sheet-days span.is-today {
+	border-color: #0f172a;
+	color: #0f172a;
+	font-weight: 700;
+}
+
+.sheet-section { display: flex; flex-direction: column; gap: 4px; }
+.sheet-label { font-size: 12px; letter-spacing: 0.22em; color: #0f172a; text-transform: uppercase; font-weight: 600; }
+.sheet-label--notes { text-transform: lowercase; letter-spacing: 0.12em; font-weight: 500; color: #475569; }
+
+.sheet-lines { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.sheet-lines[data-rows] { grid-template-rows: repeat(var(--rows, 4), 1fr); }
+.sheet-lines[data-rows]::before { content: ""; }
+.sheet-lines > li { display: grid; grid-template-columns: 1fr 22px; align-items: center; gap: 12px; padding-bottom: 2px; border-bottom: 1px solid #cbd5e1; min-height: 22px; }
+.sheet-lines > li .line-text { color: #0f172a; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-lines > li .line-check { width: 18px; height: 18px; border: 1px solid #94a3b8; border-radius: 999px; background: transparent; }
+
+/* Make the main task list scroll in the taller card */
+.tasks-card .todo-sheet { height: 100%; display: flex; }
+.tasks-card .sheet-lines#task-list { max-height: none; overflow: auto; }
+.task-item { 
+	display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; 
+	background: #ffffff; padding: 10px 12px; border-radius: 12px; border: 1px solid #e2e8f0;
+	transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+.task-item:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+.task-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0f172a; cursor: pointer; }
+.task-content .title { font-weight: 600; color: #0f172a; line-height: 1.2; }
+.task-content .meta { margin-top: 2px; }
+.due-badge { display: inline-block; font-size: 12px; color: #0f172a; background: #e2e8f0; padding: 2px 8px; border-radius: 999px; }
+.due-badge.overdue { background: #fee2e2; color: #7f1d1d; }
+.task-item.completed .title { color: #64748b; text-decoration: line-through; }
+.task-item.completed .due-badge { opacity: 0.7; }
+.task-item button.delete { border: 0; background: transparent; color: #b91c1c; cursor: pointer; font-size: 16px; padding: 6px; border-radius: 8px; }
+.task-item button.delete:hover { background: #fee2e2; }
+
+/* Empty state for the checklist */
+#task-list .empty-state {
+	background: transparent;
+	color: #0f172a;
+	opacity: 0.8;
+	padding: 6px 2px;
+	list-style: none;
+}
+
+/* No checkbox layout */
+/* Read-only items: one column */
+.task-item.read-only { grid-template-columns: 1fr; }
+
+/* Calendar specific sizing */
+.calendar-card { height: var(--calendar-h); }
+#calendar { 
+	flex: 1; 
+	align-self: stretch; 
+	width: 100%; 
+	min-height: 0; 
+	background: #ffffff; /* white background behind the calendar */
+	border-radius: 12px;
+	padding: 6px; /* tighter */
+}
+
+/* Task dots inside FullCalendar day cells */
+.fc-daygrid-day-frame { position: relative; }
+.task-dots { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; z-index: 2; pointer-events: none; }
+.task-dot { width: 8px; height: 8px; border-radius: 50%; background: #0f172a; position: relative; pointer-events: auto; }
+.task-dot:hover .task-tooltip { opacity: 1; transform: translate(-50%, 8px); }
+.task-tooltip { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 4px); background: #0f172a; color: #fff; font-size: 11px; white-space: nowrap; padding: 4px 6px; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.22); opacity: 0; pointer-events: none; transition: opacity .15s ease, transform .15s ease; }
+
+/* FullCalendar header tweaks */
+.fc .fc-toolbar { align-items: flex-start; }
+.fc .fc-toolbar-chunk:first-child .fc-button-group { margin-top: 10px; } /* nudge arrow buttons lower */
+.fc .fc-toolbar-title { font-weight: 600; }
+
+/* Trash placeholder in bottom-left */
+.trash-area {
+	position: fixed;
+	left: 18px;
+	bottom: 130px; /* sits just above the nav bar */
+	background: transparent; /* remove blue background */
+	width: auto;
+	height: auto;
+	border-radius: 0;
+	box-shadow: none;
+	display: grid;
+	place-items: center;
+	cursor: grab; /* indicate draggable */
+	user-select: none;
+	-webkit-user-drag: none;
+}
+
+.trash-area:active { cursor: grabbing; }
+
+.trash-area i,
+.trash-area svg {
+	font-size: 40px;
+	width: 40px;
+	height: 40px;
+	color: #334155;
+}
+
+
+
+/* Responsive adjustments for small screens */
+@media (max-width: 900px) {
+	.placeholder-stack { right: 12px; top: 24px; gap: 16px; }
+	:root { --calendar-h: 340px; --stack-top: 24px; --stack-gap: 16px; }
+	.card-placeholder { width: min(360px, 64vw); height: 170px; border-radius: 18px; }
+	.calendar-card { height: var(--calendar-h); }
+	.tasks-card { height: calc(100vh - var(--stack-top) - var(--calendar-h) - var(--stack-gap) - var(--nav-clear)); }
+	.card-placeholder h2 { font-size: 18px; }
+}
+
+/* Mobile and small desktop optimizations */
+@media (max-width: 1200px) {
+	/* Hide right sidebar on smaller screens for more board space */
+	.placeholder-stack { display: none; }
+	
+	/* Expand board to full width */
+	.board { margin: 8px; }
+	
+	/* Smaller board items */
+	.board-item { min-width: 140px; }
+	.board-item.folder { width: 140px; height: 100px; }
+	.board-item.doc { width: 280px; height: 200px; }
+	.board-item.todo { width: 260px; }
+	.board-item.upload { width: 280px; }
+	
+	/* Smaller nav */
+	.nav-btn { width: 52px; height: 52px; font-size: 24px; }
+	.nav-btn--primary { width: 72px; height: 72px; font-size: 38px; margin-top: -32px; }
+	.bottom-nav::before { width: 90px; height: 45px; }
+	
+	/* Smaller help button */
+	.help-fab { width: 38px; height: 38px; font-size: 18px; }
+	
+	/* Smaller trash */
+	.trash-area { left: 12px; bottom: 110px; }
+	.trash-area i, .trash-area svg { font-size: 32px; width: 32px; height: 32px; }
+}
+
+@media (max-width: 768px) {
+	/* Even smaller for mobile */
+	.board-item { font-size: 13px; padding: 8px; }
+	.board-item .item-title { font-size: 13px; }
+	.board-item.folder { width: 120px; height: 90px; font-size: 12px; }
+	.board-item.doc { width: 240px; height: 180px; }
+	.board-item.todo { width: 220px; }
+	.board-item.upload { width: 240px; }
+	
+	/* Bottom nav adjustments */
+	.nav-btn { width: 48px; height: 48px; font-size: 20px; }
+	.nav-btn--primary { width: 64px; height: 64px; font-size: 32px; margin-top: -24px; }
+	.bottom-nav { padding: 10px 12px 14px; }
+	.bottom-nav::before { width: 80px; height: 40px; }
+	
+	/* Help button */
+	.help-fab { width: 34px; height: 34px; font-size: 16px; left: 8px; top: 8px; }
+	
+	/* Trash */
+	.trash-area { left: 8px; bottom: 100px; }
+	.trash-area i, .trash-area svg { font-size: 28px; width: 28px; height: 28px; }
+	
+	/* Folder bar for mobile */
+	.folder-bar { top: 8px; padding: 6px 10px; font-size: 14px; }
+	.folder-bar button { padding: 6px 10px; font-size: 13px; }
+	
+	/* Modals */
+	.modal-dialog { width: min(420px, 94vw); padding: 10px 12px; }
+	.tour-tooltip { max-width: calc(100vw - 16px); padding: 10px 12px; }
+	.tour-tooltip h3 { font-size: 16px; }
+	.tour-tooltip p { font-size: 13px; }
+}
+
+/* ===== Modals, Drawer, Toast ===== */
+.modal[hidden], .drawer[hidden] { display: none; }
+.modal {
+	position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.25); z-index: 50;
+}
+.modal-dialog { background: #fff; width: min(520px, 92vw); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 12px 14px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.modal-body { display: grid; gap: 10px; }
+.modal-close { background: transparent; border: 0; font-size: 18px; cursor: pointer; }
+.field-label { display: block; font-size: 12px; color: #475569; margin-bottom: 4px; }
+.modal-body input[type="text"], .modal-body input[type="date"], .modal-body textarea {
+	width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit;
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.btn-primary { background: #0f172a; color: #fff; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.btn-secondary { background: #e2e8f0; color: #0f172a; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+.drawer { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr auto; z-index: 50; }
+.drawer-scrim { background: rgba(0,0,0,.25); }
+.drawer-panel { width: min(340px, 86vw); background: #fff; height: 100%; box-shadow: -10px 0 30px rgba(0,0,0,.2); padding: 12px; }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.drawer-close { background: transparent; border: 0; font-size: 18px; cursor: pointer; }
+.folder-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,.25); z-index: 60; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.toast.show { opacity: 1; }
+
+/* Folder context toolbar */
+.folder-bar { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 12px; box-shadow: 0 10px 24px rgba(0,0,0,.15); z-index: 55; }
+.folder-bar[hidden] { display: none; }
+.folder-bar-title { color: #0f172a; font-weight: 600; }
+
+/* ===== Product tour overlay ===== */
+.tour-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+.tour-highlight { position: fixed; z-index: 101; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5), 0 0 0 3px #ffffff; border-radius: 10px; transition: all .15s ease; }
+.tour-tooltip { position: fixed; z-index: 102; background: #ffffff; color: #0f172a; max-width: min(420px, calc(100vw - 24px)); border-radius: 12px; box-shadow: 0 16px 36px rgba(0,0,0,.2); padding: 12px 14px; display: grid; gap: 8px; box-sizing: border-box; overflow-wrap: anywhere; word-break: break-word; }
+.tour-tooltip h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.tour-tooltip p { margin: 0; font-size: 14px; line-height: 1.5; color: #334155; }
+.tour-controls { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tour-progress { font-size: 12px; color: #64748b; }
+.tour-buttons { display: flex; gap: 8px; }
+.tour-btn { border: 0; padding: 8px 10px; border-radius: 8px; cursor: pointer; font: inherit; }
+.tour-btn.primary { background: #0f172a; color: #ffffff; }
+.tour-btn.secondary { background: #e2e8f0; color: #0f172a; }
+.tour-btn.link { background: transparent; color: #334155; text-decoration: underline; }
+
+/* Floating help button */
+.help-fab { position: fixed; left: 12px; top: 12px; z-index: 90; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #ffffff; color: #334155; border: 1px solid #e2e8f0; box-shadow: 0 6px 14px rgba(0,0,0,0.12); text-decoration: none; font-weight: 700; }
+.help-fab:hover { filter: brightness(0.98); }
+.help-fab:focus-visible { outline: 2px solid #94a3b8; outline-offset: 3px; }
+

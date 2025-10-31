@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder | ToDoCampus</title>
+  <link rel="shortcut icon" href="./Favicon/ToDoCampus.png" type="image/png">
+  <link rel="stylesheet" href="./Main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+</head>
+<body>
+  <main class="canvas" style="min-height: 70vh; padding: 1rem;">
+    <div id="board" class="board" aria-label="Whiteboard" tabindex="0">
+      <div class="drag-guides" aria-hidden="true"></div>
+    </div>
+    <div class="trash-area" aria-label="Trash">
+      <i class="fa-solid fa-trash" style="color: #334155;" aria-hidden="true"></i>
+    </div>
+  </main>
+
+  <!-- Help / Tutorial trigger -->
+  <button id="help-fab" class="help-fab" aria-label="Open tutorial">?</button>
+
+  <!-- Bottom Navigation Bar (same as Index) -->
+  <nav class="bottom-nav" aria-label="Primary">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a class="nav-btn" href="#folders" aria-label="Folders"><i class="fa-solid fa-folder" aria-hidden="true"></i></a>
+        <span class="nav-label"></span>
+      </li>
+      <li class="nav-item">
+        <a class="nav-btn" href="#upload" aria-label="Upload"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></a>
+        <span class="nav-label"></span>
+      </li>
+      <li class="nav-item nav-item--primary">
+        <span class="label-top"></span>
+        <a class="nav-btn nav-btn--primary" href="#create" aria-label="Create new">+</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-btn" href="#notes" aria-label="Notes"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i></a>
+        <span class="nav-label"></span>
+      </li>
+      <li class="nav-item">
+        <a class="nav-btn" href="#todo" aria-label="To-Do Lists"><i class="fa-solid fa-list-check" aria-hidden="true"></i></a>
+        <span class="nav-label"></span>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Hidden helpers and overlays used by Script.js -->
+  <input id="upload-input" type="file" multiple hidden>
+
+  <div id="create-modal" class="modal" hidden aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Create Task</h3>
+        <button class="modal-close" aria-label="Close" data-close>✕</button>
+      </div>
+      <form id="create-task-form" class="modal-body">
+        <label>
+          <span class="field-label">Task</span>
+          <input id="create-task-text" type="text" placeholder="What do you need to do?" required>
+        </label>
+        <label>
+          <span class="field-label">Due date</span>
+          <input id="create-task-due" type="date">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Cancel</button>
+          <button type="submit" class="btn-primary">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="notes-modal" class="modal" hidden aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Notes</h3>
+        <button class="modal-close" aria-label="Close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="notes-textarea" rows="8" placeholder="Write your notes here..."></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Close</button>
+          <button type="button" id="save-notes" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="folder-modal" class="modal" hidden aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="folder-modal-title">Folder</h3>
+        <button class="modal-close" aria-label="Close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <ul id="folder-contents" class="folder-list" aria-live="polite"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Folder context toolbar on folder page -->
+  <div id="folder-bar" class="folder-bar" aria-hidden="false">
+    <a id="folder-back" class="btn-secondary" aria-label="Back to main board" href="./Index.html">Back</a>
+    <div class="folder-bar-title" aria-live="polite"></div>
+    <button id="folder-open-all" class="btn-primary" aria-label="Move all items to main board">Open all on board</button>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./Script.js"></script>
+</body>
+</html>
